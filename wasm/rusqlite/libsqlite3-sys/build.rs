@@ -122,7 +122,14 @@ mod build_bundled {
             .flag("-DSQLITE_ENABLE_STAT2")
             .flag("-DSQLITE_ENABLE_STAT4")
             .flag("-DSQLITE_SOUNDEX")
-            .flag("-DSQLITE_THREADSAFE=1")
+            // changed from 1 to 0
+            .flag("-DSQLITE_THREADSAFE=0")
+            //
+            // .flag("-DSQLITE_MUTEX_OMIT=1")
+            // .flag("-DSQLITE_MUTEX_NOOP=1")
+            .flag("-DSQLITE_OS_OTHER")
+            // .flag("-DSQLITE_OMIT_AUTOINIT")
+            //
             .flag("-DSQLITE_USE_URI")
             .flag("-DHAVE_USLEEP=1")
             .flag("-D_POSIX_THREAD_SAFE_FUNCTIONS") // cross compile with MinGW
