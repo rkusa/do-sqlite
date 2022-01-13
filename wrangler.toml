@@ -1,32 +1,27 @@
-name = "do-sqlite"
+name = "do-sqlite-asyncify"
 type = "javascript"
-workers_dev = true
 compatibility_date = "2022-01-11"
-
-[vars]
-WORKERS_RS_VERSION = "0.0.7"
+workers_dev = true
 
 [durable_objects]
-bindings = [
-  { name = "DATABASE", class_name = "Database" }
-]
+bindings = [{ name = "DATABASE", class_name = "Database" }]
 
 [build]
-command = "cargo install -q worker-build && worker-build --release" # required
+command = "./build.sh"
 
 [build.upload]
-dir    = "build/worker"
 format = "modules"
-main   = "./shim.mjs"
+dir = "./dist"
+main = "./worker.js" # becomes "./src/worker.js"
 
 [[build.upload.rules]]
-globs = ["**/*.wasm"]
-type  = "CompiledWasm"
+type = "ESModule"
+globs = ["**/*.js"]
 
+[[build.upload.rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
 
 # [[migrations]]
 # tag = "v1"
 # new_classes = ["Database"]
-
-# read more about configuring your Worker via wrangler.toml at:
-# https://developers.cloudflare.com/workers/cli-wrangler/configuration
