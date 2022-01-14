@@ -7,22 +7,22 @@ use std::slice;
 use rusqlite::OpenFlags;
 use sqlite_vfs::Vfs;
 
-pub struct DurableObjectVfs<const BLOCK_SIZE: usize>;
+pub struct PagesVfs<const PAGE_SIZE: usize>;
 
-struct Block<const BLOCK_SIZE: usize> {
-    data: [u8; BLOCK_SIZE],
+struct Page<const PAGE_SIZE: usize> {
+    data: [u8; PAGE_SIZE],
     dirty: bool,
 }
 
-pub struct Blocks<const BLOCK_SIZE: usize> {
+pub struct Pages<const PAGE_SIZE: usize> {
     name: String,
     count: usize,
     offset: usize,
-    blocks: HashMap<u32, Block<BLOCK_SIZE>>,
+    blocks: HashMap<u32, Page<PAGE_SIZE>>,
 }
 
-impl<const BLOCK_SIZE: usize> Vfs for DurableObjectVfs<BLOCK_SIZE> {
-    type File = Blocks<BLOCK_SIZE>;
+impl<const PAGE_SIZE: usize> Vfs for PagesVfs<PAGE_SIZE> {
+    type File = Pages<PAGE_SIZE>;
 
     fn open(
         &self,
@@ -31,7 +31,7 @@ impl<const BLOCK_SIZE: usize> Vfs for DurableObjectVfs<BLOCK_SIZE> {
     ) -> Result<Self::File, std::io::Error> {
         let name = path.file_name().unwrap().to_string_lossy().to_string();
 
-        let mut blocks = Blocks {
+        let mut blocks = Pages {
             name,
             count: 0,
             offset: 0,
@@ -64,13 +64,13 @@ impl<const BLOCK_SIZE: usize> Vfs for DurableObjectVfs<BLOCK_SIZE> {
     }
 }
 
-impl<const BLOCK_SIZE: usize> sqlite_vfs::File for Blocks<BLOCK_SIZE> {
+impl<const PAGE_SIZE: usize> sqlite_vfs::File for Pages<PAGE_SIZE> {
     fn file_size(&self) -> Result<u64, std::io::Error> {
-        Ok(dbg!((self.count * BLOCK_SIZE) as u64))
+        Ok(dbg!((self.count * PAGE_SIZE) as u64))
     }
 }
 
-impl<const BLOCK_SIZE: usize> Seek for Blocks<BLOCK_SIZE> {
+impl<const PAGE_SIZE: usize> Seek for Pages<PAGE_SIZE> {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
         let offset = match pos {
             SeekFrom::Start(n) => n,
@@ -84,9 +84,9 @@ impl<const BLOCK_SIZE: usize> Seek for Blocks<BLOCK_SIZE> {
     }
 }
 
-impl<const BLOCK_SIZE: usize> Read for Blocks<BLOCK_SIZE> {
+impl<const PAGE_SIZE: usize> Read for Pages<PAGE_SIZE> {
     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-        let offset = self.offset % BLOCK_SIZE;
+        let offset = self.offset % PAGE_SIZE;
         let block = self.current()?;
         let n = (&block.data[offset..]).read(buf)?;
         self.offset += n;
@@ -94,15 +94,15 @@ impl<const BLOCK_SIZE: usize> Read for Blocks<BLOCK_SIZE> {
     }
 }
 
-impl<const BLOCK_SIZE: usize> Write for Blocks<BLOCK_SIZE> {
+impl<const PAGE_SIZE: usize> Write for Pages<PAGE_SIZE> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        let offset = self.offset % BLOCK_SIZE;
+        let offset = self.offset % PAGE_SIZE;
         let block = self.current()?;
         let n = (&mut block.data[offset..]).write(buf)?;
         block.dirty = true;
         self.offset += n;
 
-        let count = (self.offset / BLOCK_SIZE) + 1;
+        let count = (self.offset / PAGE_SIZE) + 1;
         if count > self.count {
             self.count = count;
         }
@@ -121,14 +121,14 @@ impl<const BLOCK_SIZE: usize> Write for Blocks<BLOCK_SIZE> {
     }
 }
 
-impl<const BLOCK_SIZE: usize> Blocks<BLOCK_SIZE> {
-    fn current(&mut self) -> Result<&mut Block<BLOCK_SIZE>, std::io::Error> {
-        let index = self.offset / BLOCK_SIZE;
+impl<const PAGE_SIZE: usize> Pages<PAGE_SIZE> {
+    fn current(&mut self) -> Result<&mut Page<PAGE_SIZE>, std::io::Error> {
+        let index = self.offset / PAGE_SIZE;
 
         if let Entry::Vacant(entry) = self.blocks.entry(index as u32) {
             let data = Self::get_page(index as u32);
-            entry.insert(Block {
-                data: data.unwrap_or_else(|| [0; BLOCK_SIZE]),
+            entry.insert(Page {
+                data: data.unwrap_or_else(|| [0; PAGE_SIZE]),
                 dirty: false,
             });
         }
@@ -136,13 +136,13 @@ impl<const BLOCK_SIZE: usize> Blocks<BLOCK_SIZE> {
         Ok(self.blocks.get_mut(&(index as u32)).unwrap())
     }
 
-    pub fn get_page(ix: u32) -> Option<[u8; BLOCK_SIZE]> {
+    pub fn get_page(ix: u32) -> Option<[u8; PAGE_SIZE]> {
         unsafe {
             let ptr = crate::get_page(ix);
             if ptr.is_null() {
                 None
             } else {
-                let slice = slice::from_raw_parts_mut(ptr, BLOCK_SIZE);
+                let slice = slice::from_raw_parts_mut(ptr, PAGE_SIZE);
                 slice[..].try_into().ok()
             }
         }

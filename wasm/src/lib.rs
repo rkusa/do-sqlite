@@ -1,7 +1,7 @@
 use rusqlite::{Connection, OpenFlags};
 use sqlite_vfs::register;
 
-pub use crate::vfs::DurableObjectVfs;
+pub use crate::vfs::PagesVfs;
 
 mod utils;
 mod vfs;
@@ -13,7 +13,7 @@ extern "C" {
 
 #[no_mangle]
 extern "C" fn sqlite3_os_init() -> i32 {
-    if register("cfdo", DurableObjectVfs::<4096>).is_ok() {
+    if register("cfdo", PagesVfs::<4096>).is_ok() {
         0
     } else {
         1

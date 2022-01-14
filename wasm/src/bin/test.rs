@@ -1,4 +1,4 @@
-use do_sqlite::DurableObjectVfs;
+use do_sqlite::PagesVfs;
 use rusqlite::{Connection, OpenFlags};
 use sqlite_vfs::register;
 
@@ -7,7 +7,7 @@ fn main() {
     // unsafe { debug(*ptr as i32) };
 
     eprintln!("1");
-    register("cfdo", DurableObjectVfs::<4096>).unwrap();
+    register("cfdo", PagesVfs::<4096>).unwrap();
     eprintln!("2");
 
     // let conn = Connection::open_with_flags_and_vfs(
