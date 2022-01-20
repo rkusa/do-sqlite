@@ -113,7 +113,7 @@ impl<const PAGE_SIZE: usize> Write for Pages<PAGE_SIZE> {
     fn flush(&mut self) -> std::io::Result<()> {
         for (index, block) in &mut self.blocks {
             if block.dirty {
-                Self::put_page(*index, block.data.as_ptr());
+                Self::put_page(*index, &block.data);
                 block.dirty = false;
             }
         }
@@ -148,10 +148,10 @@ impl<const PAGE_SIZE: usize> Pages<PAGE_SIZE> {
         }
     }
 
-    fn put_page(ix: u32, data: *const u8) {
+    fn put_page(ix: u32, data: &[u8; PAGE_SIZE]) {
         eprintln!("BEFORE");
         unsafe {
-            crate::put_page(ix, data);
+            crate::put_page(ix, data.as_ptr());
         }
         eprintln!("AFTER");
     }
