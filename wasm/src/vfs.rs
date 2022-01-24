@@ -59,7 +59,7 @@ impl<const PAGE_SIZE: usize> Vfs for PagesVfs<PAGE_SIZE> {
 
 impl<const PAGE_SIZE: usize> sqlite_vfs::File for Pages<PAGE_SIZE> {
     fn file_size(&self) -> Result<u64, std::io::Error> {
-        Ok(dbg!((self.count * PAGE_SIZE) as u64))
+        Ok((self.count * PAGE_SIZE) as u64)
     }
 }
 
@@ -142,10 +142,8 @@ impl<const PAGE_SIZE: usize> Pages<PAGE_SIZE> {
     }
 
     fn put_page(ix: u32, data: &[u8; PAGE_SIZE]) {
-        eprintln!("BEFORE");
         unsafe {
             crate::put_page(ix, data.as_ptr());
         }
-        eprintln!("AFTER");
     }
 }
