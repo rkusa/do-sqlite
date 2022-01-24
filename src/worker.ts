@@ -114,55 +114,6 @@ export class Database {
       },
 
       env: {
-        __extenddftf2() {
-          console.log("__extenddftf2");
-          throw new Error("__extenddftf2 not implemented");
-        },
-        __multf3() {
-          console.log("__multf3");
-          throw new Error("__multf3 not implemented");
-        },
-        __addtf3() {
-          console.log("__addtf3");
-          throw new Error("__addtf3 not implemented");
-        },
-        __trunctfdf2() {
-          console.log("__trunctfdf2");
-          throw new Error("__trunctfdf2 not implemented");
-        },
-        __gttf2() {
-          console.log("__gttf2");
-          throw new Error("__gttf2 not implemented");
-        },
-        __getf2() {
-          console.log("__getf2");
-          throw new Error("__getf2 not implemented");
-        },
-        __divtf3() {
-          console.log("__divtf3");
-          throw new Error("__divtf3 not implemented");
-        },
-        __lttf2() {
-          console.log("__lttf2");
-          throw new Error("__lttf2 not implemented");
-        },
-        __fixtfsi() {
-          console.log("__fixtfsi");
-          throw new Error("__fixtfsi not implemented");
-        },
-        __floatsitf() {
-          console.log("__floatsitf");
-          throw new Error("__floatsitf not implemented");
-        },
-        __subtf3() {
-          console.log("__subtf3");
-          throw new Error("__subtf3 not implemented");
-        },
-        __floatditf() {
-          console.log("__floatditf");
-          throw new Error("__floatditf not implemented");
-        },
-
         async get_page(ix: number): Promise<number> {
           const page: Array<number> =
             (await storage.get<Array<number>>(String(ix))) ?? new Array(4096);
