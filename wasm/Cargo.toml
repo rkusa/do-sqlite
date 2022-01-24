@@ -12,7 +12,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 cfg-if = "1.0"
 rusqlite = { version = "0.26", features = ["bundled"] }
-sqlite-vfs = { path = "../../../rust/sqlite-vfs" }
+sqlite-vfs = { git = "https://github.com/rkusa/sqlite-vfs.git" }
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -21,4 +21,4 @@ sqlite-vfs = { path = "../../../rust/sqlite-vfs" }
 console_error_panic_hook = { version = "0.1.1", optional = true }
 
 [patch.crates-io]
-rusqlite = { path = "./rusqlite", features = ["bundled"] }
+rusqlite = { git = "https://github.com/rkusa/rusqlite.git", branch = "wasi" }
