@@ -6,7 +6,7 @@ mkdir -p dist
 
 
 cd wasm
-make build_release
+make build
 cd ..
 
 ./node_modules/.bin/esbuild --format=esm --platform=neutral --external:"*.wasm" --outdir=./dist --bundle src/worker.ts
