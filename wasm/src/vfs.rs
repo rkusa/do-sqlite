@@ -15,7 +15,6 @@ struct Page<const PAGE_SIZE: usize> {
 }
 
 pub struct Pages<const PAGE_SIZE: usize> {
-    name: String,
     count: usize,
     offset: usize,
     blocks: HashMap<u32, Page<PAGE_SIZE>>,
@@ -26,13 +25,12 @@ impl<const PAGE_SIZE: usize> Vfs for PagesVfs<PAGE_SIZE> {
 
     fn open(
         &self,
-        path: &std::path::Path,
+        _path: &std::path::Path,
         _flags: OpenFlags,
     ) -> Result<Self::File, std::io::Error> {
-        let name = path.file_name().unwrap().to_string_lossy().to_string();
+        // TODO: open file based on path
 
         let mut blocks = Pages {
-            name,
             count: 0,
             offset: 0,
             blocks: Default::default(),
@@ -46,21 +44,16 @@ impl<const PAGE_SIZE: usize> Vfs for PagesVfs<PAGE_SIZE> {
         Ok(blocks)
     }
 
-    fn delete(&self, path: &std::path::Path) -> Result<(), std::io::Error> {
-        // std::fs::remove_file(path)
+    fn delete(&self, _path: &std::path::Path) -> Result<(), std::io::Error> {
+        // Only used to delete journal or wal files, which both are not implemented yet, thus simply
+        // ignored for now.
         Ok(())
     }
 
-    fn exists(&self, path: &Path) -> Result<bool, std::io::Error> {
-        // todo!("exists");
+    fn exists(&self, _path: &Path) -> Result<bool, std::io::Error> {
+        // Only used to check existance of journal or wal files, which both are not implemented yet,
+        // thus simply always return `false` for now.
         Ok(false)
-
-        // let path = if let Some(ext) = path.extension() {
-        //     path.with_extension(format!("{}.0.block", ext.to_string_lossy()))
-        // } else {
-        //     path.with_extension("0.block")
-        // };
-        // Ok(dbg!(path.is_file()))
     }
 }
 
