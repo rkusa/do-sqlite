@@ -1,4 +1,4 @@
-import * as Asyncify from "asyncify-wasm/dist/asyncify.mjs";
+import * as Asyncify from "asyncify-wasm";
 
 import module from "./do_sqlite.wasm";
 
@@ -20,18 +20,14 @@ export class Database {
 
   async fetch(request: Request) {
     const query = await request.text();
-    const pages = this.pages;
     const storage = this.state.storage;
 
+    let exports: Exports;
     const instance = await Asyncify.instantiate(module, {
       wasi_snapshot_preview1: {
         // "wasi_snapshot_preview1"."random_get": [I32, I32] -> [I32]
         random_get(offset: number, length: number) {
-          const buffer = new Uint8Array(
-            instance.exports.memory.buffer,
-            offset,
-            length
-          );
+          const buffer = new Uint8Array(exports.memory.buffer, offset, length);
           crypto.getRandomValues(buffer);
 
           return ERRNO_SUCCESS;
@@ -54,7 +50,7 @@ export class Database {
           }
 
           const decoder = new TextDecoder();
-          const memoryView = new DataView(instance.exports.memory.buffer);
+          const memoryView = new DataView(exports.memory.buffer);
           let nwritten = 0;
           for (let i = 0; i < iovsLength; i++) {
             const dataOffset = memoryView.getUint32(iovsOffset, true);
@@ -64,7 +60,7 @@ export class Database {
             iovsOffset += 4;
 
             const data = new Uint8Array(
-              instance.exports.memory.buffer,
+              exports.memory.buffer,
               dataOffset,
               dataLength
             );
@@ -102,7 +98,7 @@ export class Database {
           environcOffset: number,
           _environBufferSizeOffset: number
         ) {
-          const memoryView = new DataView(instance.exports.memory.buffer);
+          const memoryView = new DataView(exports.memory.buffer);
           memoryView.setUint32(environcOffset, 0, true);
           return ERRNO_SUCCESS;
         },
@@ -118,13 +114,11 @@ export class Database {
           const page: Array<number> =
             (await storage.get<Array<number>>(String(ix))) ?? new Array(4096);
 
-          const offset: number = await (instance.exports.alloc as Function)(
-            4096
-          );
+          const offset = await exports.alloc(page.length);
           const dst = new Uint8Array(
-            (instance.exports.memory as WebAssembly.Memory).buffer,
+            exports.memory.buffer,
             offset,
-            4096
+            page.length
           );
           dst.set(Array.from(new Uint8Array(page)));
 
@@ -134,43 +128,47 @@ export class Database {
         },
 
         async put_page(ix: number, ptr: number) {
-          const page = new Uint8Array(
-            (instance.exports.memory as WebAssembly.Memory).buffer,
-            ptr,
-            4096
-          );
+          const page = new Uint8Array(exports.memory.buffer, ptr, 16384);
           await storage.put(String(ix), Array.from(page), {});
         },
       },
     });
+    exports = instance.exports as unknown as Exports;
+
+    // increase asyncify stack size
+    const STACK_SIZE = 4096;
+    const DATA_ADDR = 16;
+    const ptr = await exports.alloc(STACK_SIZE);
+    new Int32Array(exports.memory.buffer, DATA_ADDR, 2).set([
+      ptr,
+      ptr + STACK_SIZE,
+    ]);
 
     const encoder = new TextEncoder();
-    const offset: number = await (instance.exports.alloc as Function)(
-      query.length
-    );
+    const offset: number = await exports.alloc(query.length);
     encoder.encodeInto(
       query,
-      new Uint8Array(instance.exports.memory.buffer, offset, query.length)
+      new Uint8Array(exports.memory.buffer, offset, query.length)
     );
-    const result = await (instance.exports.run as Function)(
-      offset,
-      query.length
-    );
-    await (instance.exports.dealloc as Function)(offset, query.length);
+    const result = await exports.run(offset, query.length);
+    await exports.dealloc(offset, query.length);
 
     return new Response(`Ok: ${result}`);
   }
 }
 
-export default {
-  async fetch(request: Request, env: Env) {
-    // if !matches!(req.method(), Method::Get) {
-    //     return Response::error("Method Not Allowed", 405);
-    // }
+interface Exports {
+  readonly memory: WebAssembly.Memory;
+  alloc(size: number): number;
+  dealloc(size: number, len: number): void;
+  run(ptr: number, len: number): number;
+}
 
-    // let namespace = env.durable_object("DATABASE")?;
-    // let stub = namespace.id_from_name("main")?.get_stub()?;
-    // stub.fetch_with_str("http://sqlite/").await
+export default {
+  async fetch(req: Request, env: Env) {
+    if (req.method !== "GET") {
+      return new Response(null, { status: 405 }); // method not allowed
+    }
 
     const id = env.DATABASE.idFromName("sqlite");
     const stub = env.DATABASE.get(id);

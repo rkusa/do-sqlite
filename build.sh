@@ -9,7 +9,7 @@ cd wasm
 make build
 cd ..
 
-./node_modules/.bin/esbuild --format=esm --platform=neutral --external:"*.wasm" --outdir=./dist --bundle src/worker.ts
+./node_modules/.bin/esbuild --format=esm --platform=neutral --external:"*.wasm" --outdir=./dist --bundle --main-fields=module src/worker.ts
 
 wasm-opt -O --asyncify --pass-arg asyncify-imports@env.put_page,env.get_page \
   wasm/target/wasm32-wasi/release/do_sqlite.wasm \
