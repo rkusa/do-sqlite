@@ -12,7 +12,7 @@ My journey of creating it: https://ma.rkusa.st/store-sqlite-in-cloudflare-durabl
 
 ## Usage
 
-Deploy to Cloudflare:
+Deploy to Cloudflare (you might have to get a script limit increase to be able to deploy it):
 
 ```bash
 wrangler publish
