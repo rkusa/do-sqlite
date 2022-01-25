@@ -11,8 +11,6 @@ export class Database {
     this.state = state;
   }
 
-  pages: Array<Uint8Array> = [];
-
   async fetch(req: Request) {
     if (req.method !== "POST") {
       return new Response("only POST requests are allowed", {
