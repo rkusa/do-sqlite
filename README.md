@@ -1,15 +1,8 @@
 # `do-sqlite`
 
-## Build
+[Experimental] Persist SQLite in a Cloudflare Durable Object.
 
-Execute the following once:
-
-```bash
-brew install cmake ninja
-./build-wasi-sdk.sh
-```
-
-After that, use either of the following:
+https://ma.rkusa.st/store-sqlite-in-cloudflare-durable-objects
 
 ```bash
 wrangler dev
