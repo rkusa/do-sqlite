@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "dist/worker.js",
   "scripts": {
-    "build": "esbuild --format=esm --platform=neutral --loader:.wasm=file --loader:.js=file --outdir=./dist --bundle src/worker.ts",
-    "format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
-    "lint": "prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'"
+    "build": "./build.sh",
+    "prepare": "npm run build",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.2.0",
@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "@cloudflare/wrangler": "^1.19.5",
-    "asyncify-wasm": "^1.2.1"
+    "@rkusa/wasm-sqlite": "^0.1.0-alpha.1"
   }
 }
