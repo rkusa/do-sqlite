@@ -1,4 +1,4 @@
-name = "do-sqlite-asyncify"
+name = "do-sqlite"
 type = "javascript"
 compatibility_date = "2022-01-11"
 workers_dev = true
@@ -22,6 +22,6 @@ globs = ["**/*.js"]
 type = "CompiledWasm"
 globs = ["**/*.wasm"]
 
-# [[migrations]]
-# tag = "v1"
-# new_classes = ["Database"]
+[[migrations]]
+tag = "v1"
+new_classes = ["Database"]

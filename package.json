@@ -15,6 +15,6 @@
   },
   "dependencies": {
     "@cloudflare/wrangler": "^1.19.5",
-    "@rkusa/wasm-sqlite": "^0.1.0-alpha.1"
+    "@rkusa/wasm-sqlite": "^0.1.0-alpha.2"
   }
 }
