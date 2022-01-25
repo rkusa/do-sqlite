@@ -3,7 +3,6 @@ use sqlite_vfs::register;
 
 pub use crate::vfs::PagesVfs;
 
-mod utils;
 mod vfs;
 
 extern "C" {
@@ -11,6 +10,8 @@ extern "C" {
     pub fn put_page(ix: u32, ptr: *const u8);
 }
 
+// TODO: is there any way to provide this method for SQLite, but not export it as part of the WASM
+// module?
 #[no_mangle]
 extern "C" fn sqlite3_os_init() -> i32 {
     if register("cfdo", PagesVfs::<4096>).is_ok() {
@@ -22,8 +23,6 @@ extern "C" fn sqlite3_os_init() -> i32 {
 
 #[no_mangle]
 extern "C" fn run(ptr: *const u8, len: usize) -> i32 {
-    utils::set_panic_hook();
-
     let query = unsafe { std::slice::from_raw_parts::<'_, u8>(ptr, len) };
     let query = std::str::from_utf8(query).unwrap();
     println!("Query: {}", query);

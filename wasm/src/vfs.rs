@@ -4,8 +4,7 @@ use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::slice;
 
-use rusqlite::OpenFlags;
-use sqlite_vfs::Vfs;
+use sqlite_vfs::{OpenOptions, Vfs};
 
 pub struct PagesVfs<const PAGE_SIZE: usize>;
 
@@ -26,7 +25,7 @@ impl<const PAGE_SIZE: usize> Vfs for PagesVfs<PAGE_SIZE> {
     fn open(
         &self,
         _path: &std::path::Path,
-        _flags: OpenFlags,
+        _opts: OpenOptions,
     ) -> Result<Self::File, std::io::Error> {
         // TODO: open file based on path
 
@@ -60,6 +59,10 @@ impl<const PAGE_SIZE: usize> Vfs for PagesVfs<PAGE_SIZE> {
 impl<const PAGE_SIZE: usize> sqlite_vfs::File for Pages<PAGE_SIZE> {
     fn file_size(&self) -> Result<u64, std::io::Error> {
         Ok((self.count * PAGE_SIZE) as u64)
+    }
+
+    fn truncate(&mut self, _size: u64) -> Result<(), std::io::Error> {
+        unimplemented!("truncate")
     }
 }
 
