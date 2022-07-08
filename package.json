@@ -8,13 +8,13 @@
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^3.2.0",
+    "@cloudflare/workers-types": "^3.14.0",
     "@tsconfig/recommended": "^1.0.1",
-    "esbuild": "^0.14.11",
-    "typescript": "^4.3.2"
+    "esbuild": "^0.14.48",
+    "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@cloudflare/wrangler": "^1.19.5",
-    "@rkusa/wasm-sqlite": "^0.1.0-alpha.2"
+    "@cloudflare/wrangler": "^1.19.12",
+    "@rkusa/wasm-sqlite": "^0.1.0"
   }
 }

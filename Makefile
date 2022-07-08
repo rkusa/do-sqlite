@@ -1,5 +1,5 @@
 dev:
-	wrangler dev
+	./node_modules/.bin/wrangler dev
 
 deploy:
-	wrangler publish
+	./node_modules/.bin/wrangler publish
