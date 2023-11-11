@@ -14,7 +14,9 @@ export class Database {
     const storage = state.storage;
     const self = this;
 
+    // Block concurrency until DO is completely initialized
     state.blockConcurrencyWhile(async () => {
+      // Read the page count from page 0 (if page 0 already exists)
       const page: Array<number> | undefined = await storage.get<Array<number>>(
         String(0)
       );
